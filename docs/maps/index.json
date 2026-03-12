@@ -10,7 +10,7 @@
       ],
       "region": "conus",
       "n_hours": 6,
-      "generated_utc": "2026-03-12T19:12:05.777022Z",
+      "generated_utc": "2026-03-12T19:54:43.203081Z",
       "max_prob_map": "20260312_1700/tornado_prob_combined_conus_MAX.png",
       "hourly_maps": [
         {
@@ -666,5 +666,5 @@
       ]
     }
   ],
-  "last_updated": "2026-03-12T19:12:05.777060Z"
+  "last_updated": "2026-03-12T19:54:43.203127Z"
 }
