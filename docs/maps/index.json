@@ -1,6 +1,46 @@
 {
   "runs": [
     {
+      "run_time": "2026-03-12T00:00:00",
+      "run_key": "20260312_0000",
+      "region": "northeast",
+      "n_hours": 6,
+      "generated_utc": "2026-03-12T02:08:53.375690Z",
+      "max_prob_map": "20260312_0000/tornado_prob_MAX.png",
+      "hourly_maps": [
+        {
+          "fxx": 1,
+          "valid_time": "2026-03-12T01:00:00",
+          "file": "20260312_0000/tornado_prob_F01.png"
+        },
+        {
+          "fxx": 2,
+          "valid_time": "2026-03-12T02:00:00",
+          "file": "20260312_0000/tornado_prob_F02.png"
+        },
+        {
+          "fxx": 3,
+          "valid_time": "2026-03-12T03:00:00",
+          "file": "20260312_0000/tornado_prob_F03.png"
+        },
+        {
+          "fxx": 4,
+          "valid_time": "2026-03-12T04:00:00",
+          "file": "20260312_0000/tornado_prob_F04.png"
+        },
+        {
+          "fxx": 5,
+          "valid_time": "2026-03-12T05:00:00",
+          "file": "20260312_0000/tornado_prob_F05.png"
+        },
+        {
+          "fxx": 6,
+          "valid_time": "2026-03-12T06:00:00",
+          "file": "20260312_0000/tornado_prob_F06.png"
+        }
+      ]
+    },
+    {
       "run_time": "2026-03-11T18:00:00",
       "run_key": "20260311_1800",
       "region": "northeast",
@@ -56,5 +96,5 @@
       ]
     }
   ],
-  "last_updated": "2026-03-12T02:04:05.194804Z"
+  "last_updated": "2026-03-12T02:08:53.375698Z"
 }
