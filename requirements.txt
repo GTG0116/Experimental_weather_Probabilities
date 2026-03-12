@@ -1,0 +1,12 @@
+herbie-data>=2024.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+folium>=0.15.0
+xarray>=2023.6.0
+cfgrib>=0.9.10
+cartopy>=0.22.0
+matplotlib>=3.7.0
+branca>=0.7.0
+requests>=2.31.0
+jinja2>=3.1.0
