@@ -1,94 +1,93 @@
 name: Generate HRRR Tornado Probability Maps
 
 on:
-  # Run every hour at :05 past the hour
+  # Run every hour at :10 past the hour
   schedule:
-    - cron: "5 * * * *"
-  # Allow manual trigger from Actions tab
+    - cron: "10 * * * *"
+  # Manual trigger from Actions tab
   workflow_dispatch:
     inputs:
       run_time:
-        description: "HRRR run time (UTC) e.g. '2025-05-01 18' — leave blank for latest"
+        description: "HRRR init time (UTC) — e.g. '2025-05-01 18'. Leave blank for latest."
         required: false
         default: ""
       hours:
-        description: "Number of forecast hours to generate (1–6)"
+        description: "Forecast hours to generate (1–6)"
         required: false
         default: "6"
-  # Re-generate on pushes to main (useful for testing)
+  # Re-run when the script or requirements change on main
   push:
     branches:
       - main
     paths:
-      - "generate_tornado_map.py"
+      - "generate_map.py"
       - "requirements.txt"
 
 permissions:
-  contents: write    # needed to commit map PNGs and JSON back to repo
+  contents: write
   pages: write
   id-token: write
 
 jobs:
+  # -----------------------------------------------------------------------
   generate-maps:
+  # -----------------------------------------------------------------------
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
-      # ---------------------------------------------------------------
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      # ---------------------------------------------------------------
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
 
-      # ---------------------------------------------------------------
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # ---------------------------------------------------------------
+      # Pass run_time only when explicitly provided; script defaults to latest
       - name: Generate tornado probability maps
-        env:
-          RUN_TIME: ${{ github.event.inputs.run_time }}
-          HOURS: ${{ github.event.inputs.hours || '6' }}
         run: |
-          if [ -n "$RUN_TIME" ]; then
-            python generate_tornado_map.py --run-time "$RUN_TIME" --hours "$HOURS"
-          else
-            python generate_tornado_map.py --hours "$HOURS"
+          RUN_TIME="${{ github.event.inputs.run_time }}"
+          HOURS="${{ github.event.inputs.hours }}"
+          HOURS="${HOURS:-6}"
+
+          ARGS="--hours ${HOURS}"
+          if [ -n "${RUN_TIME// /}" ]; then
+            ARGS="$ARGS --run-time \"$RUN_TIME\""
           fi
 
-      # ---------------------------------------------------------------
+          echo "Running: python generate_map.py $ARGS"
+          eval python generate_map.py $ARGS
+
       - name: Commit and push updated maps
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
           git add docs/maps/ docs/latest.json
-
           if git diff --cached --quiet; then
-            echo "No new maps generated — nothing to commit."
+            echo "No changes to commit."
           else
             git commit -m "chore: update HRRR tornado probability maps [skip ci]"
             git push
           fi
 
-      # ---------------------------------------------------------------
       - name: Upload Pages artifact
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/
 
-  # Deploy to GitHub Pages (only on main branch)
+  # -----------------------------------------------------------------------
   deploy-pages:
+  # -----------------------------------------------------------------------
     needs: generate-maps
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
