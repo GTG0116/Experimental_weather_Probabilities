@@ -196,7 +196,7 @@ def make_map(
     fxx: int,
     is_max: bool,
     output_path: str,
-    region: str = "northeast",
+    region: str = "conus",
 ):
     if region == "conus":
         W, E, S, N = CONUS_EXTENT
