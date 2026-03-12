@@ -1,6 +1,46 @@
 {
   "runs": [
     {
+      "run_time": "2026-03-11T18:00:00",
+      "run_key": "20260311_1800",
+      "region": "conus",
+      "n_hours": 6,
+      "generated_utc": "2026-03-12T02:21:56.783295Z",
+      "max_prob_map": "20260311_1800/tornado_prob_conus_MAX.png",
+      "hourly_maps": [
+        {
+          "fxx": 1,
+          "valid_time": "2026-03-11T19:00:00",
+          "file": "20260311_1800/tornado_prob_conus_F01.png"
+        },
+        {
+          "fxx": 2,
+          "valid_time": "2026-03-11T20:00:00",
+          "file": "20260311_1800/tornado_prob_conus_F02.png"
+        },
+        {
+          "fxx": 3,
+          "valid_time": "2026-03-11T21:00:00",
+          "file": "20260311_1800/tornado_prob_conus_F03.png"
+        },
+        {
+          "fxx": 4,
+          "valid_time": "2026-03-11T22:00:00",
+          "file": "20260311_1800/tornado_prob_conus_F04.png"
+        },
+        {
+          "fxx": 5,
+          "valid_time": "2026-03-11T23:00:00",
+          "file": "20260311_1800/tornado_prob_conus_F05.png"
+        },
+        {
+          "fxx": 6,
+          "valid_time": "2026-03-12T00:00:00",
+          "file": "20260311_1800/tornado_prob_conus_F06.png"
+        }
+      ]
+    },
+    {
       "run_time": "2026-03-12T00:00:00",
       "run_key": "20260312_0000",
       "region": "conus",
@@ -26,46 +66,6 @@
       ]
     },
     {
-      "run_time": "2026-03-11T18:00:00",
-      "run_key": "20260311_1800",
-      "region": "northeast",
-      "n_hours": 6,
-      "generated_utc": "2026-03-12T02:04:05.194795Z",
-      "max_prob_map": "20260311_1800/tornado_prob_MAX.png",
-      "hourly_maps": [
-        {
-          "fxx": 1,
-          "valid_time": "2026-03-11T19:00:00",
-          "file": "20260311_1800/tornado_prob_F01.png"
-        },
-        {
-          "fxx": 2,
-          "valid_time": "2026-03-11T20:00:00",
-          "file": "20260311_1800/tornado_prob_F02.png"
-        },
-        {
-          "fxx": 3,
-          "valid_time": "2026-03-11T21:00:00",
-          "file": "20260311_1800/tornado_prob_F03.png"
-        },
-        {
-          "fxx": 4,
-          "valid_time": "2026-03-11T22:00:00",
-          "file": "20260311_1800/tornado_prob_F04.png"
-        },
-        {
-          "fxx": 5,
-          "valid_time": "2026-03-11T23:00:00",
-          "file": "20260311_1800/tornado_prob_F05.png"
-        },
-        {
-          "fxx": 6,
-          "valid_time": "2026-03-12T00:00:00",
-          "file": "20260311_1800/tornado_prob_F06.png"
-        }
-      ]
-    },
-    {
       "run_time": "2026-03-11T23:00:00",
       "run_key": "20260311_2300",
       "region": "northeast",
@@ -81,5 +81,5 @@
       ]
     }
   ],
-  "last_updated": "2026-03-12T02:18:29.677035Z"
+  "last_updated": "2026-03-12T02:21:56.783305Z"
 }
