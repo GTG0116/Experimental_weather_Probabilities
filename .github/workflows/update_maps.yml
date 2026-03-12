@@ -1,4 +1,4 @@
-name: Generate HRRR Tornado Probability Maps
+name: Generate Tornado Probability Maps (HRRR / RAP / NAM / Combined)
 
 on:
   # Run every hour at :10 past the hour
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       run_time:
-        description: "HRRR init time (UTC) — e.g. '2025-05-01 18'. Leave blank for latest."
+        description: "Model init time (UTC) — e.g. '2025-05-01 18'. Leave blank for latest."
         required: false
         default: ""
       hours:
@@ -16,13 +16,23 @@ on:
         required: false
         default: "6"
       region:
-        description: "Map region: 'conus' for full Contiguous US, 'northeast' for Northeast US only"
+        description: "Map region: 'conus' for full CONUS, 'northeast' for Northeast US only"
         required: false
         default: "conus"
         type: choice
         options:
           - conus
           - northeast
+      model:
+        description: "Model: hrrr | rap | nam | combined (combined generates all three + ensemble)"
+        required: false
+        default: "combined"
+        type: choice
+        options:
+          - combined
+          - hrrr
+          - rap
+          - nam
   # Re-run when the script or requirements change on main
   push:
     branches:
@@ -41,7 +51,7 @@ jobs:
   generate-maps:
   # -----------------------------------------------------------------------
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -60,16 +70,20 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Pass run_time only when explicitly provided; script defaults to latest
       - name: Generate tornado probability maps
         run: |
           RUN_TIME="${{ github.event.inputs.run_time }}"
           HOURS="${{ github.event.inputs.hours }}"
           REGION="${{ github.event.inputs.region }}"
+          MODEL="${{ github.event.inputs.model }}"
+
+          # Apply defaults for scheduled / push triggers
           HOURS="${HOURS:-6}"
           REGION="${REGION:-conus}"
+          MODEL="${MODEL:-combined}"
 
-          ARGS="--hours ${HOURS}"
+          ARGS="--hours ${HOURS} --model ${MODEL}"
+
           if [ -n "${RUN_TIME// /}" ]; then
             ARGS="$ARGS --run-time \"$RUN_TIME\""
           fi
@@ -88,7 +102,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: update HRRR tornado probability maps [skip ci]"
+            git commit -m "chore: update tornado probability maps (HRRR+RAP+NAM) [skip ci]"
             git push
           fi
 
