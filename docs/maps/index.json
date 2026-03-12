@@ -4,7 +4,7 @@
       "run_time": "2026-03-11T23:00:00",
       "run_key": "20260311_2300",
       "n_hours": 6,
-      "generated_utc": "2026-03-12T01:39:50.760723Z",
+      "generated_utc": "2026-03-12T01:31:28.394186Z",
       "max_prob_map": "20260311_2300/tornado_prob_MAX.png",
       "hourly_maps": [
         {
@@ -40,5 +40,5 @@
       ]
     }
   ],
-  "last_updated": "2026-03-12T01:39:50.760734Z"
+  "last_updated": "2026-03-12T01:31:28.394195Z"
 }
