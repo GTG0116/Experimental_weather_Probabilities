@@ -1,4 +1,4 @@
-name: Generate Tornado Probability Maps (HRRR / RAP / NAM / Combined)
+name: Generate Severe Weather Probability Maps (HRRR / RRFS / NAM / NSSL-MPAS / Combined)
 
 on:
   # Run every hour at :10 past the hour
@@ -24,15 +24,16 @@ on:
           - conus
           - northeast
       model:
-        description: "Model: hrrr | rap | nam | combined (combined generates all three + ensemble)"
+        description: "Model: hrrr | rrfs | nam | nssl-mpas | combined (combined generates all + ensemble)"
         required: false
         default: "combined"
         type: choice
         options:
           - combined
           - hrrr
-          - rap
+          - rrfs
           - nam
+          - nssl-mpas
   # Re-run when the script or requirements change on main
   push:
     branches:
@@ -70,7 +71,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Generate tornado probability maps
+      - name: Generate severe weather probability maps
         run: |
           RUN_TIME="${{ github.event.inputs.run_time }}"
           HOURS="${{ github.event.inputs.hours }}"
@@ -102,7 +103,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: update tornado probability maps (HRRR+RAP+NAM) [skip ci]"
+            git commit -m "chore: update severe weather probability maps (HRRR+RRFS+NAM+MPAS) [skip ci]"
             git push
           fi
 
