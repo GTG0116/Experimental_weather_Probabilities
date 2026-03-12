@@ -2,7 +2,7 @@
 """
 HRRR Tornado Probability Map Generator
 =======================================
-Generates 6-hour tornado probability maps for the Northeast US.
+Generates 6-hour tornado probability maps for the Northeast US or CONUS.
 
 Composite index ingredients (all from HRRR SFC files):
   - Surface-Based CAPE              (CAPE:surface)
@@ -44,6 +44,7 @@ warnings.filterwarnings("ignore")
 # Config
 # ---------------------------------------------------------------------------
 NORTHEAST_EXTENT = [-82.5, -64.0, 36.0, 48.5]   # [W, E, S, N]
+CONUS_EXTENT     = [-125.0, -66.0, 24.0, 50.0]  # [W, E, S, N]
 GRID_SPACING_KM  = 3.0
 RADIUS_MILES     = 25.0
 RADIUS_KM        = RADIUS_MILES * 1.60934
@@ -195,13 +196,28 @@ def make_map(
     fxx: int,
     is_max: bool,
     output_path: str,
+    region: str = "northeast",
 ):
-    W, E, S, N = NORTHEAST_EXTENT
-    proj  = ccrs.LambertConformal(central_longitude=-73.5, central_latitude=42.5,
-                                   standard_parallels=(33, 45))
+    if region == "conus":
+        W, E, S, N = CONUS_EXTENT
+        proj = ccrs.LambertConformal(central_longitude=-96.0, central_latitude=37.5,
+                                     standard_parallels=(33, 45))
+        figsize       = (22, 13)
+        x_ticks       = list(range(-125, -65, 5))
+        y_ticks       = list(range(24, 51, 4))
+        region_label  = "CONUS"
+    else:
+        W, E, S, N = NORTHEAST_EXTENT
+        proj = ccrs.LambertConformal(central_longitude=-73.5, central_latitude=42.5,
+                                     standard_parallels=(33, 45))
+        figsize       = (16, 11)
+        x_ticks       = list(range(-82, -63, 2))
+        y_ticks       = list(range(36, 50, 2))
+        region_label  = "Northeast US"
+
     pc    = ccrs.PlateCarree()
 
-    fig   = plt.figure(figsize=(16, 11), dpi=150)
+    fig   = plt.figure(figsize=figsize, dpi=150)
     fig.patch.set_facecolor("#1a1a2e")   # dark navy page background
 
     # Map axes: leave room at top for header strip, bottom for colorbar + caption
@@ -258,8 +274,8 @@ def make_map(
     )
     gl.top_labels    = False
     gl.right_labels  = False
-    gl.xlocator      = mticker.FixedLocator(range(-82, -63, 2))
-    gl.ylocator      = mticker.FixedLocator(range(36, 50, 2))
+    gl.xlocator      = mticker.FixedLocator(x_ticks)
+    gl.ylocator      = mticker.FixedLocator(y_ticks)
     gl.xformatter    = LONGITUDE_FORMATTER
     gl.yformatter    = LATITUDE_FORMATTER
     gl.xlabel_style  = {"size": 7.5, "color": "#cccccc"}
@@ -286,7 +302,7 @@ def make_map(
     fxx_str   = f"F{fxx:02d}"
     prod_str  = "6-Hour Maximum Envelope" if is_max else f"Hour {fxx_str}"
 
-    title_main = "HRRR  |  Tornado Probability  |  Northeast US"
+    title_main = f"HRRR  |  Tornado Probability  |  {region_label}"
     title_sub  = f"Run: {run_str}     Valid: {valid_str}     {prod_str}"
 
     ax.set_title(title_main, loc="left",  fontsize=13, fontweight="bold",
@@ -357,7 +373,7 @@ def parse_run_time(s: str):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate HRRR-based tornado probability maps for Northeast US")
+        description="Generate HRRR-based tornado probability maps for Northeast US or CONUS")
     parser.add_argument(
         "--run-time", default="",
         help="HRRR model init time (UTC): 'YYYY-MM-DD HH' or 'YYYY-MM-DD HH:MM'. "
@@ -365,7 +381,12 @@ def main():
     parser.add_argument(
         "--hours", type=int, default=6,
         help="Forecast hours to generate: 1–6 (default 6).")
+    parser.add_argument(
+        "--conus", action="store_true",
+        help="Generate maps for the full Contiguous US (CONUS) instead of just Northeast US.")
     args = parser.parse_args()
+
+    region = "conus" if args.conus else "northeast"
 
     run_time = parse_run_time(args.run_time)
     if run_time is None:
@@ -378,8 +399,12 @@ def main():
     run_dir  = os.path.join(OUTPUT_DIR, run_key)
     os.makedirs(run_dir, exist_ok=True)
 
+    region_label = "CONUS" if region == "conus" else "Northeast US"
+    fname_prefix = "tornado_prob_conus" if region == "conus" else "tornado_prob"
+
     print(f"\nHRRR Tornado Probability Map Generator")
     print(f"Run  : {run_time:%Y-%m-%d %H:%M UTC}")
+    print(f"Region: {region_label}")
     print(f"Hours: F01 – F{n_hours:02d}\n")
 
     hourly_probs = []
@@ -400,10 +425,10 @@ def main():
 
         hourly_probs.append((valid_time, prob_sm, lats, lons))
 
-        fname = f"tornado_prob_F{fxx:02d}.png"
+        fname = f"{fname_prefix}_F{fxx:02d}.png"
         fpath = os.path.join(run_dir, fname)
         make_map(lats, lons, prob_sm, run_time, valid_time,
-                 fxx=fxx, is_max=False, output_path=fpath)
+                 fxx=fxx, is_max=False, output_path=fpath, region=region)
         hourly_maps.append({
             "fxx": fxx,
             "valid_time": valid_time.isoformat(),
@@ -420,16 +445,17 @@ def main():
     lats_r, lons_r = hourly_probs[0][2], hourly_probs[0][3]
     valid_end = hourly_probs[-1][0]
 
-    max_fname = "tornado_prob_MAX.png"
+    max_fname = f"{fname_prefix}_MAX.png"
     max_fpath = os.path.join(run_dir, max_fname)
     make_map(lats_r, lons_r, prob_max, run_time, valid_end,
-             fxx=n_hours, is_max=True, output_path=max_fpath)
+             fxx=n_hours, is_max=True, output_path=max_fpath, region=region)
 
     # Update index
     index = load_index()
     register_run(index, {
         "run_time":      run_time.isoformat(),
         "run_key":       run_key,
+        "region":        region,
         "n_hours":       n_hours,
         "generated_utc": datetime.utcnow().isoformat() + "Z",
         "max_prob_map":  f"{run_key}/{max_fname}",
