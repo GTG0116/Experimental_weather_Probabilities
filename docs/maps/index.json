@@ -1,6 +1,57 @@
 {
   "runs": [
     {
+      "run_time": "2026-03-10T20:00:00",
+      "run_key": "20260310_2000",
+      "model": "combined",
+      "ensemble": [
+        "hrrr"
+      ],
+      "region": "conus",
+      "n_hours": 6,
+      "hazards": [
+        "tornado",
+        "hail",
+        "wind",
+        "lightning",
+        "severe"
+      ],
+      "generated_utc": "2026-03-12T20:49:16.558150Z",
+      "max_prob_map": "20260310_2000/tornado_prob_combined_conus_MAX.png",
+      "hourly_maps": [
+        {
+          "fxx": 1,
+          "valid_time": "2026-03-10T21:00:00",
+          "file": "20260310_2000/tornado_prob_combined_conus_F01.png"
+        },
+        {
+          "fxx": 2,
+          "valid_time": "2026-03-10T22:00:00",
+          "file": "20260310_2000/tornado_prob_combined_conus_F02.png"
+        },
+        {
+          "fxx": 3,
+          "valid_time": "2026-03-10T23:00:00",
+          "file": "20260310_2000/tornado_prob_combined_conus_F03.png"
+        },
+        {
+          "fxx": 4,
+          "valid_time": "2026-03-11T00:00:00",
+          "file": "20260310_2000/tornado_prob_combined_conus_F04.png"
+        },
+        {
+          "fxx": 5,
+          "valid_time": "2026-03-11T01:00:00",
+          "file": "20260310_2000/tornado_prob_combined_conus_F05.png"
+        },
+        {
+          "fxx": 6,
+          "valid_time": "2026-03-11T02:00:00",
+          "file": "20260310_2000/tornado_prob_combined_conus_F06.png"
+        }
+      ]
+    },
+    {
       "run_time": "2024-05-07T00:00:00",
       "run_key": "20240507_0000",
       "model": "combined",
@@ -711,5 +762,5 @@
       ]
     }
   ],
-  "last_updated": "2026-03-12T20:07:27.099564Z"
+  "last_updated": "2026-03-12T20:49:16.558220Z"
 }
