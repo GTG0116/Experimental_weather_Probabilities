@@ -6,11 +6,10 @@ Generates 6-hour severe weather probability maps for the Northeast US or CONUS
 using HRRR, RRFS, NAM, NSSL-MPAS, or an ensemble combination.
 
 Supported models (--model flag):
-  hrrr      : High-Resolution Rapid Refresh (3-km)
-  rrfs      : Rapid Refresh Forecast System (3-km; replaces RAP)
-  nam       : NAM CONUS Nest (3-km convection-allowing)
-  nssl-mpas : NSSL Model for Prediction Across Scales (3-km, experimental)
-  combined  : Ensemble average of all available models
+  hrrr     : High-Resolution Rapid Refresh (3-km)
+  rrfs     : Rapid Refresh Forecast System (3-km; replaces RAP)
+  nam      : NAM CONUS Nest (3-km convection-allowing)
+  combined : Ensemble average of HRRR + RRFS + NAM
 
 Hazard types generated each run:
   tornado   : Tornado probability within 25 miles
@@ -158,20 +157,10 @@ MODEL_CONFIGS = {
         "grid_km":      3.0,
         "color":        "#4ef1a4",   # green
     },
-    "nssl-mpas": {
-        # NSSL Model for Prediction Across Scales — experimental 3-km CONUS
-        # May not be available via standard Herbie backends; fails gracefully.
-        "herbie_model": "nssl-mpas",
-        "product":      None,
-        "label":        "MPAS",
-        "label_long":   "NSSL-MPAS 3-km",
-        "grid_km":      3.0,
-        "color":        "#c87af5",   # purple
-    },
 }
 
 # Models that form the combined ensemble (tried in order; failures skipped)
-ENSEMBLE_MEMBERS = ["hrrr", "rrfs", "nam", "nssl-mpas"]
+ENSEMBLE_MEMBERS = ["hrrr", "rrfs", "nam"]
 
 # Common-grid resolution for the combined ensemble interpolation
 COMMON_GRID_DEG_CONUS = 0.10   # ° (~11 km at mid-latitudes)
@@ -676,7 +665,7 @@ def make_map(
         fontsize=7.5, color="#aaaaaa", ha="left", va="bottom",
     )
     if model == "combined":
-        src_note = "NOAA HRRR + RRFS + NAM + NSSL-MPAS via Herbie"
+        src_note = "NOAA HRRR + RRFS + NAM via Herbie"
     else:
         src_note = f"NOAA {MODEL_CONFIGS[model]['label']} via Herbie"
     fig.text(
@@ -824,7 +813,7 @@ def run_combined(run_time, run_key, run_dir, region, n_hours):
     Returns the combined index entry.
     """
     print(f"\n{'='*60}")
-    print(f"  Mode  : Combined Ensemble (HRRR + RRFS + NAM + NSSL-MPAS)")
+    print(f"  Mode  : Combined Ensemble (HRRR + RRFS + NAM)")
     print(f"  Region: {'CONUS' if region == 'conus' else 'Northeast US'}")
     print(f"  Hazards: {', '.join(ALL_HAZARDS)}")
     print(f"{'='*60}")
@@ -999,9 +988,9 @@ def main():
         help="Generate maps for the full CONUS instead of Northeast US only.")
     parser.add_argument(
         "--model",
-        choices=["hrrr", "rrfs", "nam", "nssl-mpas", "combined"],
+        choices=["hrrr", "rrfs", "nam", "combined"],
         default="combined",
-        help="Model to use: hrrr | rrfs | nam | nssl-mpas | combined (default: combined).")
+        help="Model to use: hrrr | rrfs | nam | combined (default: combined).")
     args = parser.parse_args()
 
     region = "conus" if args.conus else "northeast"
