@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HRRR Tornado Probability — Northeast US</title>
+  <style>
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --border:  #30363d;
+      --text:    #e6edf3;
+      --muted:   #8b949e;
+      --accent:  #58a6ff;
+      --red:     #f85149;
+      --green:   #3fb950;
+      --orange:  #d29922;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    header .logo { font-size: 1.5rem; }
+    header h1 { font-size: 1.15rem; font-weight: 600; line-height: 1.3; }
+    header p  { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: #388bfd33;
+      color: var(--accent);
+      border: 1px solid #388bfd66;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+    /* ---- Controls row ---- */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .controls label { font-size: 0.85rem; color: var(--muted); }
+    select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    select:hover { border-color: var(--accent); }
+
+    /* ---- Map card ---- */
+    .map-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .map-card img {
+      width: 100%;
+      display: block;
+      border-bottom: 1px solid var(--border);
+    }
+    .map-meta {
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .map-meta strong { color: var(--text); font-weight: 600; }
+
+    /* ---- Hour tabs ---- */
+    .hour-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 20px 0 12px;
+    }
+    .hour-btn {
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .hour-btn:hover  { border-color: var(--accent); color: var(--accent); }
+    .hour-btn.active { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+
+    /* ---- Legend ---- */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+      padding: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .legend-title { width: 100%; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
+    .swatch { width: 16px; height: 16px; border-radius: 3px; border: 1px solid #ffffff22; flex-shrink: 0; }
+
+    /* ---- Info grid ---- */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .info-card h3 { font-size: 0.85rem; color: var(--accent); margin-bottom: 6px; font-weight: 600; }
+    .info-card p  { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
+
+    /* ---- Status ---- */
+    #status {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 18px;
+    }
+    #status.loading { background: #388bfd22; border: 1px solid #388bfd55; color: var(--accent); }
+    #status.error   { background: #f8514922; border: 1px solid #f8514955; color: var(--red); }
+    #status.ok      { display: none; }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🌪️</div>
+  <div>
+    <h1>HRRR Tornado Probability &nbsp;<span class="badge">Northeast US</span></h1>
+    <p>CAPE · 0–6 km Shear · 0–3 km SRH · STP · 0–3 km UH  |  25-mile radius probability  |  6-hour outlook</p>
+  </div>
+</header>
+
+<main>
+  <div id="status" class="loading">⏳ Loading latest model run data…</div>
+
+  <div class="controls">
+    <label for="runSelect">Model run:</label>
+    <select id="runSelect"></select>
+  </div>
+
+  <div class="hour-tabs" id="hourTabs"></div>
+
+  <div class="map-card" id="mapCard">
+    <img id="mapImg" src="" alt="Tornado probability map" />
+    <div class="map-meta" id="mapMeta"></div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-title">Tornado Probability Within 25 Miles</div>
+    <div class="legend-item"><div class="swatch" style="background:#00bb00"></div> 2%</div>
+    <div class="legend-item"><div class="swatch" style="background:#77cc00"></div> 5%</div>
+    <div class="legend-item"><div class="swatch" style="background:#e6e600"></div> 10%</div>
+    <div class="legend-item"><div class="swatch" style="background:#ffaa00"></div> 15%</div>
+    <div class="legend-item"><div class="swatch" style="background:#ff5500"></div> 25%</div>
+    <div class="legend-item"><div class="swatch" style="background:#cc0000"></div> 35%</div>
+    <div class="legend-item"><div class="swatch" style="background:#880000"></div> 45%</div>
+    <div class="legend-item"><div class="swatch" style="background:#4a0080"></div> 60%+</div>
+  </div>
+
+  <!-- Info cards -->
+  <div class="info-grid">
+    <div class="info-card">
+      <h3>Data Source</h3>
+      <p>NOAA High-Resolution Rapid Refresh (HRRR) model, ~3 km grid spacing,
+         updated hourly. Data served from NOAA AWS S3 bucket via the
+         <em>Herbie</em> Python package.</p>
+    </div>
+    <div class="info-card">
+      <h3>Probability Index</h3>
+      <p>Composite of five ingredients weighted by predictive skill:
+         <strong>0–3 km UH (38%)</strong>, Computed STP — CAPE×SRH₁×BS₀₋₆ (28%),
+         0–3 km SRH (18%), Surface CAPE (10%), 0–6 km bulk shear (6%).
+         UH gating suppresses false-positive areas lacking mesocyclone rotation.</p>
+    </div>
+    <div class="info-card">
+      <h3>25-Mile Radius</h3>
+      <p>Raw gridded probabilities are convolved with a Gaussian kernel scaled
+         to a ~25 statute mile radius to reflect positional uncertainty and
+         produce smooth, SPC-style probability fields.</p>
+    </div>
+    <div class="info-card">
+      <h3>Limitations</h3>
+      <p>Experimental product — not for operational use. HRRR-based tornado
+         probabilities carry large uncertainty, particularly beyond 3 h.
+         Always consult official NWS/SPC guidance for severe weather decisions.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Maps auto-generated from NOAA HRRR data · Experimental — not for operational forecast use ·
+  <a href="https://github.com/" style="color:var(--accent)">Source on GitHub</a>
+</footer>
+
+<script>
+  const BASE = "./maps/";
+  let currentRun  = null;
+  let currentHour = "MAX";
+
+  // ---- Fetch index
+  async function loadIndex() {
+    const resp = await fetch(BASE + "index.json?t=" + Date.now());
+    if (!resp.ok) throw new Error("index.json not found (" + resp.status + ")");
+    return resp.json();
+  }
+
+  // ---- Populate run selector
+  function populateRunSelect(runs) {
+    const sel = document.getElementById("runSelect");
+    sel.innerHTML = "";
+    runs.forEach((r, i) => {
+      const opt = document.createElement("option");
+      const dt  = new Date(r.run_time);
+      opt.value = i;
+      opt.textContent = "Run: " + dt.toUTCString().replace(" GMT","") + " UTC — F01–F" + String(r.n_hours).padStart(2,"0");
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", () => {
+      currentRun = runs[+sel.value];
+      buildTabs(currentRun);
+      showHour("MAX");
+    });
+    currentRun = runs[0];
+  }
+
+  // ---- Build hour tab buttons
+  function buildTabs(run) {
+    const tabs = document.getElementById("hourTabs");
+    tabs.innerHTML = "";
+
+    // MAX button
+    addTab(tabs, "MAX", "6-hr Max");
+
+    run.hourly_maps.forEach(h => {
+      const dt  = new Date(h.valid_time);
+      const lbl = "F" + String(h.fxx).padStart(2,"0") + " (" + dt.getUTCHours().toString().padStart(2,"0") + "z)";
+      addTab(tabs, String(h.fxx), lbl);
+    });
+  }
+
+  function addTab(container, value, label) {
+    const btn = document.createElement("button");
+    btn.className = "hour-btn" + (value === currentHour ? " active" : "");
+    btn.dataset.value = value;
+    btn.textContent = label;
+    btn.addEventListener("click", () => showHour(value));
+    container.appendChild(btn);
+  }
+
+  // ---- Show selected hour
+  function showHour(hour) {
+    currentHour = hour;
+
+    // Highlight active tab
+    document.querySelectorAll(".hour-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.value === hour);
+    });
+
+    let entry, title;
+    if (hour === "MAX") {
+      const imgPath = BASE + currentRun.max_prob_map;
+      document.getElementById("mapImg").src = imgPath + "?t=" + Date.now();
+      const runDt   = new Date(currentRun.run_time);
+      document.getElementById("mapMeta").innerHTML =
+        `<span><strong>Run:</strong> ${runDt.toUTCString().replace(" GMT","")} UTC</span>` +
+        `<span><strong>Product:</strong> 6-Hour Maximum Probability Envelope</span>` +
+        `<span><strong>Coverage:</strong> Northeast US</span>` +
+        `<span><strong>Radius:</strong> 25 statute miles</span>`;
+    } else {
+      entry = currentRun.hourly_maps.find(h => String(h.fxx) === hour);
+      if (!entry) return;
+      const imgPath = BASE + entry.file;
+      document.getElementById("mapImg").src = imgPath + "?t=" + Date.now();
+      const runDt   = new Date(currentRun.run_time);
+      const validDt = new Date(entry.valid_time);
+      document.getElementById("mapMeta").innerHTML =
+        `<span><strong>Run:</strong> ${runDt.toUTCString().replace(" GMT","")} UTC</span>` +
+        `<span><strong>Valid:</strong> ${validDt.toUTCString().replace(" GMT","")} UTC</span>` +
+        `<span><strong>Forecast hour:</strong> F${String(entry.fxx).padStart(2,"0")}</span>` +
+        `<span><strong>Radius:</strong> 25 statute miles</span>`;
+    }
+  }
+
+  // ---- Init
+  (async () => {
+    const statusEl = document.getElementById("status");
+    try {
+      const data = await loadIndex();
+      if (!data.runs || data.runs.length === 0) throw new Error("No runs in index.");
+      populateRunSelect(data.runs);
+      buildTabs(currentRun);
+      showHour("MAX");
+      statusEl.className = "ok";
+    } catch (err) {
+      statusEl.className = "error";
+      statusEl.textContent = "⚠ Could not load map data: " + err.message +
+        "  —  Maps are generated by GitHub Actions. Check that the workflow has run successfully.";
+    }
+  })();
+</script>
+</body>
+</html>
