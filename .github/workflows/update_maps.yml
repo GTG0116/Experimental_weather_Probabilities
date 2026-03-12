@@ -15,6 +15,14 @@ on:
         description: "Forecast hours to generate (1–6)"
         required: false
         default: "6"
+      region:
+        description: "Map region: 'conus' for full Contiguous US, 'northeast' for Northeast US only"
+        required: false
+        default: "conus"
+        type: choice
+        options:
+          - conus
+          - northeast
   # Re-run when the script or requirements change on main
   push:
     branches:
@@ -57,11 +65,16 @@ jobs:
         run: |
           RUN_TIME="${{ github.event.inputs.run_time }}"
           HOURS="${{ github.event.inputs.hours }}"
+          REGION="${{ github.event.inputs.region }}"
           HOURS="${HOURS:-6}"
+          REGION="${REGION:-conus}"
 
           ARGS="--hours ${HOURS}"
           if [ -n "${RUN_TIME// /}" ]; then
             ARGS="$ARGS --run-time \"$RUN_TIME\""
+          fi
+          if [ "${REGION}" = "conus" ]; then
+            ARGS="$ARGS --conus"
           fi
 
           echo "Running: python generate_map.py $ARGS"
